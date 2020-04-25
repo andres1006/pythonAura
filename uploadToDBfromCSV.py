@@ -4,7 +4,7 @@ from pymongo import MongoClient
 from Tkinter import Tk, Label, Button, Radiobutton, IntVar
 from tkFileDialog import askdirectory
 from os import listdir
-from os.path import isfile, join,isdir, splitext
+from os.path import isfile, join,isdir
 import pandas as pd
 import json
 import sys
@@ -13,10 +13,10 @@ import datetime
 import numpy as np
 import tkMessageBox
 import Tkinter, tkFileDialog
-import os.path
 
 
-print("Argv = ", sys.argv)
+
+print("res = ", sys.argv)
 
 mypath= sys.argv[1]
 
@@ -65,65 +65,64 @@ timeDomain=["TAS.csv","TSL","TFIX","TSV","TSM"]
 for i in range(1):
     files =  [f for f in listdir(mypath) if isfile(join(mypath, f))]
     x = mypath.split("/")
+    print x[len(x)-1]
     df[i]= pd.DataFrame()
-
+    #print files
+    #print folders
     for y in files:
-        nombre, extension = os.path.splitext(y)
-        if "" != extension:
-            print y
-            newcol = []
-            prov = pd.read_csv(mypath + "/" + y, encoding='utf-8', skipinitialspace=True)
-            #if ("TAS" not in y) and ("TSL" not in y) and ("TFIX" not in y) and ("TSV" not in y) and ("TSM" not in y):
-            if "FRECUENCIA" in y:
-                #newcol = [((if("FFT" in y) "FFT" else "HILBERT")+"_"+y.split("_")[0]+"_"+z) if z!="ID" else z  for z in prov.columns ]
-                #newcol = [y.split("_")[2].split(".")[0]+"_"+y.split("_")[0]+"_"+z if z!="ID" else z  for z in prov.columns ]
-                for z in prov.columns:
-                    if z!="ID":
-                        if("FFT" in y):
-                            newcol.append("FFT"+"_"+y.split("_")[0]+"_"+z)
-                        else:
-                            newcol.append("HILBERT"+"_"+y.split("_")[0]+"_"+z)
+        #print y
+        newcol=[]
+        prov = pd.read_csv(mypath + "/" + y,encoding = 'utf-8',skipinitialspace=True)
+        #print prov
+        #if ("TAS" not in y) and ("TSL" not in y) and ("TFIX" not in y) and ("TSV" not in y) and ("TSM" not in y):
+        if "FRECUENCIA" in y:
+            #newcol = [((if("FFT" in y) "FFT" else "HILBERT")+"_"+y.split("_")[0]+"_"+z) if z!="ID" else z  for z in prov.columns ]
+            #newcol = [y.split("_")[2].split(".")[0]+"_"+y.split("_")[0]+"_"+z if z!="ID" else z  for z in prov.columns ]
+            for z in prov.columns:
+                if z!="ID":
+                    if("FFT" in y):
+                        newcol.append("FFT"+"_"+y.split("_")[0]+"_"+z)
                     else:
-                        newcol.append(z)
+                        newcol.append("HILBERT"+"_"+y.split("_")[0]+"_"+z)
+                else:
+                    newcol.append(z)
 
-            else:
-                for z in prov.columns:
-                    if z!="ID":
-                        newcol.append("TEMP"+"_"+z)
-                    else:
-                        newcol.append(z)
+        else:
+            for z in prov.columns:
+                if z!="ID":
+                    newcol.append("TEMP"+"_"+z)
+                else:
+                    newcol.append(z)
 
-            prov.columns= newcol
+        prov.columns= newcol
 
-            #print prov.columns
-            if len(df[i])>0:
-                df[i] = pd.merge(df[i],prov, on="ID")
-            else:
-                df[i] = prov
+        #print prov.columns
 
+        if len(df[i])>0:
+            df[i] = pd.merge(df[i],prov, on="ID")
+        else:
+            df[i] = prov
 
     for index, row in df[i].iterrows():
-        if (row.isnull().values.sum() > 0.8 * len(row)):
-            if result != "No to all" and result != "Yes to all":
-                #print result
+        if (row.isnull().values.sum() > 0.8*len(row)):
+            if result != "No to all" and result != "Yes to all" :
+                print result
                 result = ask_multiple_choice_question(
                     str(row[0]) + " from " + x + " has more then 80% of empty values.\n Do you want to insert it to the DB?",
-                    [                           "Yes",
+                    [                        "Yes",
                         "No",
                         "Yes to all",
                         "No to all"
                     ]
                 )
-            if result == "No" or result == "No to all":
+            if result == "No" or result == "No to all" :
                 df[i].drop(df[i].index[index])
     db[x[len(x)-1]].drop()
     if len(files) > 1:
-        record = json.loads(df[i].T.to_json()).values()
-        db[x[len(x)-1]].insert(record, {"ordered": True})
+        record=json.loads(df[i].T.to_json()).values()
+        db[x[len(x)-1]].insert(record, {"ordered":True}  )
         time.sleep(0.5)
-        # print(x)
-
-
+        #print(x)
 
 db = client.operations.operations
 post = {"operation":"datosUpload", "date": str(datetime.datetime.now()), "pathologiesInvolved":str(folders) }
