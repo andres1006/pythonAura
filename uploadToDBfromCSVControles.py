@@ -4,7 +4,7 @@ from pymongo import MongoClient
 from Tkinter import Tk, Label, Button, Radiobutton, IntVar
 from tkFileDialog import askdirectory
 from os import listdir
-from os.path import isfile, join,isdir
+from os.path import isfile, join,isdir, splitext
 import pandas as pd
 import json
 import sys
