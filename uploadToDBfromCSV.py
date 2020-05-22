@@ -103,20 +103,6 @@ for i in range(1):
         else:
             df[i] = prov
 
-    for index, row in df[i].iterrows():
-        if (row.isnull().values.sum() > 0.8*len(row)):
-            if result != "No to all" and result != "Yes to all" :
-                print result
-                result = ask_multiple_choice_question(
-                    str(row[0]) + " from " + x + " has more then 80% of empty values.\n Do you want to insert it to the DB?",
-                    [                        "Yes",
-                        "No",
-                        "Yes to all",
-                        "No to all"
-                    ]
-                )
-            if result == "No" or result == "No to all" :
-                df[i].drop(df[i].index[index])
     db[x[len(x)-1]].drop()
     if len(files) > 1:
         record=json.loads(df[i].T.to_json()).values()
